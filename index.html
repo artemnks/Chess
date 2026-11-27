@@ -5,43 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Шахматы: доска и движок</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#3a2a21">
+<meta name="theme-color" content="#000000">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Шахматы">
 <style>
-:root{--bg:#3a2a21;--fg:#f3e9dd;--mut:#c9b3a2;--card:#4a362b;--bd:#61483a;--ac:#e08a5a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#efe3d3;--fg:#3a2a21;--mut:#7a6252;--card:#f7ecdf;--bd:#d9c3ac;color-scheme:light}}
-:root[data-theme="dark"]{color-scheme:dark}
+:root{--bg:#e8e8e8;--fg:#111;--mut:#555;--card:#fff;--bd:#000;--ac:#333;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1a1a;--fg:#eee;--mut:#aaa;--card:#222;--bd:#fff;--ac:#ccc;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1a1a1a;--fg:#eee;--mut:#aaa;--card:#222;--bd:#fff;--ac:#ccc;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);background-image:radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,.05),transparent 60%);color:var(--fg);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:10px 8px 24px}
-.wrap{max-width:480px;margin:0 auto}
-h1{font-size:18px;margin:2px 0 8px}
-#bd{width:100%;max-width:480px;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));border:8px solid #8f4a33;border-radius:6px;box-shadow:0 3px 14px rgba(0,0,0,.45),inset 0 0 0 1px rgba(0,0,0,.25);user-select:none;-webkit-user-select:none;touch-action:manipulation;container-type:inline-size;overflow:hidden}
-#bd div{display:flex;align-items:center;justify-content:center;font-size:min(9.4vw,45px);font-size:9.4cqw;line-height:1;position:relative;cursor:pointer}
-.l{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.016 .007' numOctaves='3' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .34 0 0 0 0 .18 0 0 0 .5 -.12'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23f)'/%3E%3C/svg%3E"),#f7e1c3}
-.d{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.018 .008' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .12 0 0 0 0 .05 0 0 0 .55 -.1'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23f)'/%3E%3C/svg%3E"),#c0654a}
-.w{color:#fff;text-shadow:0 0 2px #000,0 0 2px #000,0 0 3px #000}.b{color:#111}
-.lm{box-shadow:inset 0 0 0 100px rgba(255,235,60,.38)}
-.sel{box-shadow:inset 0 0 0 100px rgba(60,140,255,.45)}
-.ht{outline:4px solid #e5484d;outline-offset:-4px}
-.tg::after{content:"";position:absolute;width:26%;height:26%;border-radius:50%;background:rgba(0,0,0,.28)}
-.pc{width:94%;height:94%;pointer-events:none;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;filter:drop-shadow(0 1.5px 1px rgba(0,0,0,.35))}
-.pc.w{fill:#f8f1e6;stroke:#2b2622;--dt:#4a4540}
-.pc.b{fill:#2b3350;stroke:#10152b;--dt:#dfe3f2}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:10px 8px 24px}
+.wrap{max-width:520px;margin:0 auto}
+h1{font-size:18px;margin:2px 0 8px;font-weight:600}
+.board-wrap{display:flex;gap:6px;align-items:stretch}
+.eval-bar{width:22px;background:#000;border-radius:2px;position:relative;overflow:hidden;border:1px solid #000;flex-shrink:0}
+.eval-fill{position:absolute;bottom:0;width:100%;background:#fff;transition:height 0.5s ease}
+#bd{width:100%;max-width:480px;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));border:2px solid #000;user-select:none;-webkit-user-select:none;touch-action:manipulation;container-type:inline-size;overflow:hidden;background:#000}
+#bd div{display:flex;align-items:center;justify-content:center;font-size:9.4cqw;line-height:1;position:relative;cursor:pointer}
+.l{background:#ffffff}
+.d{background:#000000}
+.lm{box-shadow:inset 0 0 0 100px rgba(255,255,0,.35)}
+.sel{box-shadow:inset 0 0 0 100px rgba(100,150,255,.45)}
+.ht{outline:3px solid #e5484d;outline-offset:-3px}
+.tg::after{content:"";position:absolute;width:28%;height:28%;border-radius:50%;background:rgba(0,0,0,.35)}
+.pc{width:96%;height:96%;pointer-events:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.pc.w{fill:#ffffff;stroke:#000000;--pc:#ffffff;--sc:#000000}
+.pc.b{fill:#000000;stroke:#ffffff;--pc:#000000;--sc:#ffffff}
 .slide{position:relative;z-index:5;animation:slide .2s cubic-bezier(.3,.7,.3,1)}
 @keyframes slide{from{transform:translate(calc(var(--dx)*111%),calc(var(--dy)*111%))}}
-.ic{position:absolute;top:2%;right:2%;width:36%;height:36%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font:700 4.6cqw/1 system-ui,sans-serif;z-index:6;box-shadow:0 1px 3px rgba(0,0,0,.45);pointer-events:none}
-#bd.th1{border-color:#4a6b3a}
-#bd.th1 .l{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.008 .09' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .3 0 0 0 0 .14 0 0 0 .55 -.1'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23f)'/%3E%3C/svg%3E"),#eeeed2}
-#bd.th1 .d{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.009 .1' numOctaves='3' seed='9'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .18 0 0 0 0 .05 0 0 0 .65 -.12'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23f)'/%3E%3C/svg%3E"),#769656}
+.ic{position:absolute;top:3%;right:3%;width:32%;height:32%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font:700 4.6cqw/1 system-ui,sans-serif;z-index:6;box-shadow:0 1px 3px rgba(0,0,0,.45);pointer-events:none}
+.coord{position:absolute;font-size:11px;font-weight:bold;pointer-events:none}
+.coord.rank{left:3px;top:2px}
+.coord.file{right:3px;bottom:2px}
+.l .coord{color:#000}
+.d .coord{color:#fff}
 .act{outline:3px solid var(--ac);outline-offset:1px}
 .ic2{display:inline-flex;min-width:1.6em;height:1.6em;padding:0 .2em;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;margin-right:6px;box-sizing:border-box}
-#msg{margin:8px 0;padding:8px 10px;background:var(--card);border-radius:8px;min-height:2.6em;border:1px solid var(--bd)}
+#msg{margin:8px 0;padding:8px 10px;background:var(--card);border-radius:4px;min-height:2.6em;border:1px solid var(--bd)}
 .row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
-button,select{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
-button.p{background:var(--ac);color:#241a14;border-color:var(--ac)}
+button,select{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:4px;padding:8px 10px}
+button.p{background:#000;color:#fff;border-color:#000}
 label{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mut);flex:1;min-width:140px}
 label select{width:100%}
 #pgn{font-size:13px;color:var(--mut);word-break:break-word}
@@ -50,19 +54,55 @@ label select{width:100%}
 <body>
 <div class="wrap">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<symbol id="P" viewBox="0 0 45 45"><circle cx="22.5" cy="13.5" r="5.4"/><path d="M17.5 22.5c-1.5 5-4.5 6.5-4.5 13.5h19c0-7-3-8.5-4.5-13.5z"/><path d="M11 38.5h23V36H11z"/></symbol>
-<symbol id="R" viewBox="0 0 45 45"><path d="M12.5 10.5h4.2v3h3.2v-3h5.2v3h3.2v-3h4.2V20h-20z"/><path d="M14.5 20h16l1.5 14.5H13z"/><path d="M10.5 38.5h24v-4h-24z"/></symbol>
-<symbol id="N" viewBox="0 0 45 45"><path d="M12.5 35.5c.5-9 3-14 8.5-18.5l-3-5.5 5.5-1.5 2 2.5c7 1 11 7.5 11 16.5v6.5z"/><circle cx="23.5" cy="15.5" r="1.3" style="fill:var(--dt);stroke:none"/><path d="M27 14.5c3 3 4 8 4 14" style="fill:none;stroke:var(--dt)"/><path d="M12.5 38.5h24v-3h-24z"/></symbol>
-<symbol id="B" viewBox="0 0 45 45"><circle cx="22.5" cy="8" r="2.6"/><path d="M22.5 11c5 3.5 7 7.5 7 11 0 3-2.5 5-7 5s-7-2-7-5c0-3.5 2-7.5 7-11z"/><path d="M19 21.5h7M22.5 18v7" style="fill:none;stroke:var(--dt)"/><path d="M15.5 36c0-5 2-8 3.5-9.5h7c1.500 1.500 3.500 4.500 3.500 9.500z"/><path d="M11.5 38.5h22V36h-22z"/></symbol>
-<symbol id="Q" viewBox="0 0 45 45"><path d="M9.5 16l5 10 1.500-12.500 3.500 11 3-12 3 12 3.500-11 1.500 12.500 5-10-2.500 19h-23z"/><circle cx="9.5" cy="14" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="22.5" cy="11" r="2"/><circle cx="29" cy="12" r="2"/><circle cx="35.5" cy="14" r="2"/><path d="M10.500 38.500h24V35h-24z"/></symbol>
-<symbol id="K" viewBox="0 0 45 45"><path d="M22.5 4.500v10M18 9h9" style="fill:none;stroke-width:2.2"/><path d="M11 35c0-9 4-14.500 11.500-14.500S34 26 34 35z"/><path d="M16 26h13" style="fill:none;stroke:var(--dt)"/><path d="M10.500 38.500h24V35h-24z"/></symbol>
+<symbol id="P" viewBox="0 0 45 45">
+  <circle cx="22.5" cy="12" r="5" style="fill:var(--pc);stroke:var(--sc);stroke-width:2"/>
+  <path d="M17 22c-1.5 5-4 7-4 14h19c0-7-2.5-9-4-14z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2;stroke-linejoin:round"/>
+  <path d="M11 38h23v-2H11z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2"/>
+</symbol>
+<symbol id="R" viewBox="0 0 45 45">
+  <path d="M12 10h4v3h3v-3h4v3h3v-3h4v8H12z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2;stroke-linejoin:round"/>
+  <path d="M14 18h17l1 16H13z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2;stroke-linejoin:round"/>
+  <path d="M10 38h25v-4H10z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2"/>
+</symbol>
+<symbol id="N" viewBox="0 0 45 45">
+  <path d="M13 36c.5-9 3-14 9-19l-3-6 6-2 2 3c7 1 11 8 11 17v7z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2;stroke-linejoin:round"/>
+  <circle cx="24" cy="15" r="1.8" style="fill:var(--sc);stroke:none"/>
+  <path d="M27 14c3 3 4 8 4 14" style="fill:none;stroke:var(--sc);stroke-width:1.5"/>
+  <path d="M13 39h24v-3H13z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2"/>
+</symbol>
+<symbol id="B" viewBox="0 0 45 45">
+  <circle cx="22.5" cy="7" r="2.5" style="fill:var(--pc);stroke:var(--sc);stroke-width:2"/>
+  <path d="M22.5 10c5 3.5 7 8 7 11 0 3-2.5 5-7 5s-7-2-7-5c0-3 2-7.5 7-11z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2;stroke-linejoin:round"/>
+  <path d="M19 21h7M22.5 18v7" style="fill:none;stroke:var(--sc);stroke-width:1.5"/>
+  <path d="M15 36c0-5 2-8 3.5-10h7c1.5 2 3.5 5 3.5 10z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2"/>
+  <path d="M11 39h23v-3H11z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2"/>
+</symbol>
+<symbol id="Q" viewBox="0 0 45 45">
+  <path d="M9 15l5 11 1.5-13 3.5 11 3-12 3 12 3.5-11 1.5 13 5-11-2.5 20h-23z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2;stroke-linejoin:round"/>
+  <circle cx="9" cy="13" r="2" style="fill:var(--pc);stroke:var(--sc);stroke-width:1.5"/>
+  <circle cx="16" cy="11" r="2" style="fill:var(--pc);stroke:var(--sc);stroke-width:1.5"/>
+  <circle cx="22.5" cy="10" r="2" style="fill:var(--pc);stroke:var(--sc);stroke-width:1.5"/>
+  <circle cx="29" cy="11" r="2" style="fill:var(--pc);stroke:var(--sc);stroke-width:1.5"/>
+  <circle cx="36" cy="13" r="2" style="fill:var(--pc);stroke:var(--sc);stroke-width:1.5"/>
+  <path d="M10 39h25v-4H10z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2"/>
+</symbol>
+<symbol id="K" viewBox="0 0 45 45">
+  <path d="M22.5 4v11M17 9h11" style="fill:none;stroke:var(--sc);stroke-width:2.5;stroke-linecap:round"/>
+  <path d="M11 35c0-9 4-15 11.5-15S34 26 34 35z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2;stroke-linejoin:round"/>
+  <path d="M16 26h13" style="fill:none;stroke:var(--sc);stroke-width:1.5"/>
+  <path d="M10 39h25v-4H10z" style="fill:var(--pc);stroke:var(--sc);stroke-width:2"/>
+</symbol>
 </defs></svg>
-<h1>♟︎ Доска + движок</h1>
-<div class="row" id="qbar" style="margin:0 0 8px"><button id="qw" class="p" style="flex:1">⬜ Я белыми</button><button id="qb" class="p" style="flex:1;background:#2f3342;border-color:#2f3342">⬛ Я чёрными</button><button id="qa" style="flex:1">Анализ</button></div>
-<div id="bd"></div>
+<h1>♟ Доска + движок <span style="font-size:11px;opacity:.6">v5</span></h1>
+<div class="row" id="qbar" style="margin:0 0 8px"><button id="qw" class="p" style="flex:1">⬜ Я белыми</button><button id="qb" class="p" style="flex:1;background:#fff;color:#000;border-color:#000">⬛ Я чёрными</button><button id="qa" style="flex:1">Анализ</button></div>
+<div class="board-wrap">
+  <div class="eval-bar"><div class="eval-fill" id="evalBar" style="height:50%"></div></div>
+  <div id="bd"></div>
+</div>
 <div id="msg">Ходи за обе стороны: нажми фигуру, потом клетку.</div>
 <div id="jl" style="margin:-2px 0 8px;min-height:1.6em;font-size:14px"></div>
 <div id="opn" style="font-size:13px;color:var(--mut);min-height:1.3em;margin:-4px 0 6px"></div>
+<div id="phase" style="font-size:12px;color:var(--ac);min-height:1.2em;margin:-4px 0 6px"></div>
 <div class="row">
 <button class="p" id="hintb">Подсказка</button>
 <button id="undo">Отменить</button>
@@ -77,8 +117,8 @@ label select{width:100%}
 <select id="time"><option value="700">0,7 с (быстро)</option><option value="2500" selected>2,5 с</option><option value="6000">6 с</option><option value="15000">15 с (сильнее)</option><option value="30000">30 с (максимум)</option></select></label>
 <label>Макс. время (адаптивно)
 <select id="tmax"><option value="0">не продлевать</option><option value="4000">до 4 с</option><option value="6000" selected>до 6 с</option><option value="10000">до 10 с</option><option value="15000">до 15 с</option><option value="30000">до 30 с</option></select></label>
-<label>Тема доски
-<select id="theme"><option value="th2">Терракота (дерево)</option><option value="th1">Зелёная</option></select></label>
+<label>Тема
+<select id="theme"><option value="bw">Ч/Б (как на фото)</option><option value="th1">Зелёная</option><option value="th2">Терракота</option></select></label>
 </div>
 <div class="row">
 <label>Дебют / гамбит
@@ -483,186 +523,41 @@ function clear(){TK.fill(0);KIL.fill(0);HIST.fill(0);CM.fill(0)}
 return{setup,setFen,think,pick,judge,perft,clear};
 })();
 
-/* ==================== РАСПОЗНАВАНИЕ ДЕБЮТНОЙ ФАЗЫ С ИМПРОВИЗАЦИЕЙ ==================== */
+/* ==================== РАСПОЗНАВАНИЕ ДЕБЮТНОЙ ФАЗЫ + ИМПРОВИЗАЦИЯ ==================== */
 function analyzeOpeningPhase(chess){
- const fen=chess.fen(),parts=fen.split(' ');
- const turn=parts[1];
- const halfmove=parseInt(parts[4])||0;
+ const parts=chess.fen().split(' ');
  const fullmove=parseInt(parts[5])||1;
  const board=chess.board();
- 
- // Подсчёт материала
- let material={w:0,b:0};
- let pieces={w:{n:0,b:0,r:0,q:0},b:{n:0,b:0,r:0,q:0}};
- let developed={w:0,b:0};
- let castled={w:false,b:false};
- let kingMoved={w:false,b:false};
- let queenside={w:0,b:0},kingside={w:0,b:0};
- 
- for(let r=0;r<8;r++){
-  for(let c=0;c<8;c++){
-   const p=board[r][c];
-   if(!p)continue;
-   const color=p.color;
-   if(p.type==='p')continue;
-   if(p.type==='k'){
-    if(color==='w')material.w+=0;else material.b+=0;
-    // Король на e1/e8 = не рокирован
-    if(color==='w'&&r===0&&c===4)kingMoved.w=false;
-    if(color==='b'&&r===7&&c===4)kingMoved.b=false;
-    if(color==='w'&&r===0&&c!==4)castled.w=true;
-    if(color==='b'&&r===7&&c!==4)castled.b=true;
-   }else{
-    const val={n:3,b:3,r:5,q:9}[p.type]||0;
-    if(color==='w'){material.w+=val;pieces.w[p.type]=(pieces.w[p.type]||0)+1}
-    else{material.b+=val;pieces.b[p.type]=(pieces.b[p.type]||0)+1}
-   }
-  }
+ let mat={w:0,b:0},dev={w:0,b:0},cast={w:false,b:false};
+ for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+  const p=board[r][c];if(!p)continue;
+  if(p.type==='k'){if(p.color==='w'&&c!==4)cast.w=true;if(p.color==='b'&&c!==4)cast.b=true;continue}
+  if(p.type==='p')continue;
+  const v={n:3,b:3,r:5,q:9}[p.type]||0;mat[p.color]+=v;
+  if(p.color==='w'&&r>=3)dev.w++;if(p.color==='b'&&r<=4)dev.b++;
  }
- 
- // Подсчёт развитых фигур (не пешки, не король, на 3+ горизонтали для белых, 6- для чёрных)
- for(let r=0;r<8;r++){
-  for(let c=0;c<8;c++){
-   const p=board[r][c];
-   if(!p||p.type==='p'||p.type==='k')continue;
-   if(p.color==='w'&&r>=3)developed.w++;
-   if(p.color==='b'&&r<=4)developed.b++;
-  }
- }
- 
- // Пешечная структура
- let pawnStructure={w:[],b:[]};
- for(let c=0;c<8;c++){
-  let wp=0,bp=0;
-  for(let r=0;r<8;r++){
-   if(board[r][c]&&board[r][c].type==='p'){
-    if(board[r][c].color==='w')wp++;else bp++;
-   }
-  }
-  pawnStructure.w.push(wp);
-  pawnStructure.b.push(bp);
- }
- 
- // Определение фазы
  let phase='opening';
- let phaseScore=0;
- 
- // Критерии дебюта
- if(fullmove<=10&&material.w>=15&&material.b>=15){
-  phaseScore+=3; // Ранняя стадия
- }
- if(fullmove<=15&&developed.w<=4&&developed.b<=4){
-  phaseScore+=2; // Фигуры ещё развиваются
- }
- if(!castled.w&&!castled.b&&fullmove<=12){
-  phaseScore+=1; // Рокировки ещё не сделаны
- }
- 
- // Критерии миттельшпиля
- if(fullmove>10&&(developed.w>=4||developed.b>=4)){
-  phaseScore-=1;
- }
- if(castled.w&&castled.b){
-  phaseScore-=2; // Обе стороны рокировали
- }
- if(material.w<12||material.b<12){
-  phaseScore-=3; // Потери материала = миттельшпиль
- }
- 
- // Критерии эндшпиля
- if(material.w<=6&&material.b<=6){
-  phase='endgame';
- }else if(phaseScore<=0){
-  phase='middlegame';
- }else{
-  phase='opening';
- }
- 
- return{
-  phase,
-  phaseScore,
-  fullmove,
-  material,
-  developed,
-  castled,
-  kingMoved,
-  pieces,
-  pawnStructure,
-  halfmove
- };
+ if(mat.w<=6&&mat.b<=6)phase='endgame';
+ else if(fullmove>10&&(cast.w||cast.b)&&mat.w<15)phase='middlegame';
+ else if(fullmove>12&&(dev.w+dev.b)>=6)phase='middlegame';
+ return{phase,fullmove,mat,dev,cast};
 }
-
-// Гибкий поиск дебюта по позиции (не только по ходам)
-function findOpeningByPosition(chess){
- const analysis=analyzeOpeningPhase(chess);
- const history=chess.history();
+function detectOpening(chess){
  const n=s=>s.replace(/[+#]/g,'');
- 
- // Сначала точное совпадение
- for(const[name,moves]of Object.entries(OPEN)){
-  if(name.startsWith('—'))continue;
-  if(history.length>=moves.length){
-   let match=true;
-   for(let i=0;i<moves.length;i++){
-    if(n(history[i])!==n(moves[i])){match=false;break}
-   }
-   if(match)return{name,confidence:1.0,deviation:0};
-  }
+ const hist=chess.history().map(n);
+ const lines=[];
+ for(const[name,mv]of Object.entries(OPEN))if(!name.startsWith('—')&&mv.length)lines.push([name,mv.map(n)]);
+ for(const[name,k,seq]of ECO)lines.push([name,seq.map(n)]);
+ let best=null;
+ for(const[name,seq]of lines){
+  let c=0;while(c<seq.length&&c<hist.length&&hist[c]===seq[c])c++;
+  const deviated=c<hist.length&&c<seq.length&&hist[c]!==seq[c];
+  const score=c+(deviated?0.5:0);
+  if(!best||score>best.score)best={name,c,deviated,score};
  }
- 
- // Частичное совпадение (до отклонения)
- let bestMatch=null,bestLen=0;
- for(const[name,moves]of Object.entries(OPEN)){
-  if(name.startsWith('—'))continue;
-  let matchLen=0;
-  for(let i=0;i<Math.min(history.length,moves.length);i++){
-   if(n(history[i])===n(moves[i]))matchLen++;
-   else break;
-  }
-  if(matchLen>bestLen&&matchLen>=2){
-   bestLen=matchLen;
-   bestMatch={name,confidence:matchLen/moves.length,deviation:history.length-matchLen};
-  }
- }
- 
- // Если нашли частичное совпадение и позиция всё ещё "дебютная"
- if(bestMatch&&analysis.phase==='opening'&&bestMatch.confidence>=0.4){
-  return{
-   name:bestMatch.name+' (импровизация)',
-   confidence:bestMatch.confidence,
-   deviation:bestMatch.deviation,
-   improvisation:true
-  };
- }
- 
- // Распознавание по структуре (если точного совпадения нет)
- if(analysis.phase==='opening'){
-  // Испанская/Итальянская: e4 e5, кони на f3/c6, слон на c4/b5
-  if(history.length>=2&&n(history[0])==='e4'&&n(history[1])==='e5'){
-   const board=chess.board();
-   // Белые: конь на f3, слон на c4 или b5
-   const wf3=board[5][5]&&board[5][5].type==='n'&&board[5][5].color==='w';
-   const bc4=board[4][2]&&board[4][2].type==='b'&&board[4][2].color==='w';
-   const bb5=board[3][1]&&board[3][1].type==='b'&&board[3][1].color==='w';
-   if(wf3&&(bc4||bb5)){
-    return{name:bc4?'Итальянская партия (импровизация)':'Испанская партия (импровизация)',confidence:0.7,deviation:0,improvisation:true};
-   }
-  }
-  // Сицилианская: e4 c5
-  if(history.length>=2&&n(history[0])==='e4'&&n(history[1])==='c5'){
-   return{name:'Сицилианская защита (импровизация)',confidence:0.8,deviation:0,improvisation:true};
-  }
-  // Французская: e4 e6
-  if(history.length>=2&&n(history[0])==='e4'&&n(history[1])==='e6'){
-   return{name:'Французская защита (импровизация)',confidence:0.8,deviation:0,improvisation:true};
-  }
-  // Ферзевый гамбит: d4 d5 c4
-  if(history.length>=3&&n(history[0])==='d4'&&n(history[1])==='d5'&&n(history[2])==='c4'){
-   return{name:'Ферзевый гамбит (импровизация)',confidence:0.8,deviation:0,improvisation:true};
-  }
- }
- 
- return null;
+ const ph=analyzeOpeningPhase(chess);
+ if(!best||best.c<2)return{name:'',deviated:false,devColor:null,phase:ph.phase,fullmove:ph.fullmove};
+ return{name:best.name,deviated:best.deviated,devColor:best.deviated?(best.c%2===0?'w':'b'):null,phase:ph.phase,fullmove:ph.fullmove};
 }
 
 /* ==================== ИНТЕРФЕЙС ==================== */
@@ -687,9 +582,10 @@ Object.keys(OPEN).forEach(k=>{const o=document.createElement('option');o.textCon
 
 let sel=null,targets=[],last=null,hint=null,flipped=false,busy=false,pmode=false,animMove=false,rate=null,nextRate=null,judgeRun=0,manualOnce=false;
 
-let IC={brilliant:['!!','#1baca6'],great:['!','#5b8baf'],best:['★','#81b64c'],excellent:['✓','#96bc4b'],good:['+','#8d9b6b'],book:['≡','#a88865'],inacc:['?!','#e6a919'],mistake:['?','#ee8a3d'],blunder:['??','#d9362b']};
+let IC={brilliant:['!!','#1baca6'],great:['!','#5b8baf'],best:['★','#000'],excellent:['✓','#333'],good:['+','#666'],book:['≡','#888'],inacc:['?!','#e6a919'],mistake:['?','#ee8a3d'],blunder:['??','#d9362b']};
 const NAMES={brilliant:'Блестящий ход',great:'Замечательный ход',best:'Лучший ход',excellent:'Отличный ход',good:'Хороший ход',book:'Ход из теории',inacc:'Неточность',mistake:'Ошибка',blunder:'Зевок'};
-const dcol=s=>flipped?7-'abcdefgh'.indexOf(s[0]):'abcdefgh'.indexOf(s[0]),drow=s=>flipped?(+s[1])-1:8-(+s[1]);
+const dcol=s=>flipped?7-'abcdefgh'.indexOf(s[0]):'abcdefgh'.indexOf(s[0]);
+const drow=s=>flipped?8-(+s[1]):(+s[1])-1;
 function render(){
  const b=g.board(),hl=g.history({verbose:true}),lm=hl[hl.length-1];
  const am=animMove&&lm;animMove=false;
@@ -710,7 +606,9 @@ function render(){
    pc=`<svg class="pc ${p.color}${sl?' slide':''}"${sl?` style="--dx:${dcol(sl[0])-dcol(sl[1])};--dy:${drow(sl[0])-drow(sl[1])}"`:''} viewBox="0 0 45 45"><use href="#${p.type.toUpperCase()}"/></svg>`;
   }
   if(rate&&lm&&rate.ply===hl.length&&sq===lm.to)pc+=`<i class="ic" style="background:${IC[rate.cls][1]}">${IC[rate.cls][0]}</i>`;
-  h+=`<div class="${cl}" data-sq="${sq}" style="background-position:${(r*37+c*61)%110}px ${(r*53+c*29)%110}px">${pc}</div>`;
+  if(c===0)pc+=`<span class="coord rank">${8-rr}</span>`;
+  if(r===7)pc+=`<span class="coord file">${'abcdefgh'[cc]}</span>`;
+  h+=`<div class="${cl}" data-sq="${sq}">${pc}</div>`;
  }
  $('bd').innerHTML=h;
  $('pgn').textContent=g.pgn();
@@ -723,6 +621,10 @@ function status(){
  return false;
 }
 function defer(f){requestAnimationFrame(()=>setTimeout(f,0))}
+function updateEvalBar(score){
+ const pct=Math.max(5,Math.min(95,50+score/20));
+ $('evalBar').style.height=pct+'%';
+}
 
 /* ---------- СТАРЫЙ ПОИСК (запасной) ---------- */
 const VAL={p:100,n:320,b:330,r:500,q:900,k:0},INF=1e9,MATE=1e5;
@@ -1031,39 +933,33 @@ function judgeSoon(){
  },260);
 }
 let ECO=[["Испанская партия",5,"e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 d6 c3 O-O"],["Итальянская партия",5,"e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d3 d6 O-O O-O"],["Гамбит Эванса",7,"e4 e5 Nf3 Nc6 Bc4 Bc5 b4 Bxb4 c3 Ba5 d4 exd4 O-O d6 cxd4 Bb6"],["Защита двух коней",6,"e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5 d5 exd5 Na5 Bb5+ c6 dxc6 bxc6 Be2 h6 Nf3 e4"],["Шотландская партия",5,"e4 e5 Nf3 Nc6 d4 exd4 Nxd4 Nf6 Nxc6 bxc6 e5 Qe7 Qe2 Nd5 c4 Ba6"],["Шотландский гамбит",7,"e4 e5 Nf3 Nc6 d4 exd4 Bc4 Bc5 c3 Nf6 e5 d5 Bb5 Ne4"],["Русская партия",4,"e4 e5 Nf3 Nf6 Nxe5 d6 Nf3 Nxe4 d4 d5 Bd3 Nc6 O-O Be7"],["Партия четырёх коней",6,"e4 e5 Nf3 Nc6 Nc3 Nf6 Bb5 Bb4 O-O O-O d3 d6 Bg5 Bxc3 bxc3 Qe7"],["Защита Филидора",4,"e4 e5 Nf3 d6 d4 exd4 Nxd4 Nf6 Nc3 Be7"],["Королевский гамбит",3,"e4 e5 f4 exf4 Nf3 g5 h4 g4 Ne5 Nf6"],["Венская партия",3,"e4 e5 Nc3 Nf6 f4 d5 fxe5 Nxe4 Nf3 Be7 d3 Nxc3 bxc3"],["Датский гамбит",3,"e4 e5 d4 exd4 c3 dxc3 Bc4 cxb2 Bxb2 d5 Bxd5 Nf6"],["Центральная партия",5,"e4 e5 d4 exd4 Qxd4 Nc6 Qe3 Nf6 Nc3 Bb4"],["Латвийский гамбит",4,"e4 e5 Nf3 f5 Nxe5 Qf6 Nc4 fxe4 Nc3 Qg6"],["Сицилианская защита",2,"e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Be3 e5"],["Сицилианская: Найдорф",10,"e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Be3 e5 Nb3 Be6"],["Сицилианская: Дракон",10,"e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 g6 Be3 Bg7 f3 O-O Qd2 Nc6"],["Сицилианская: Алапин",3,"e4 c5 c3 d5 exd5 Qxd5 d4 Nf6 Nf3 e6 Be2 Nc6"],["Сицилианская: закрытая",3,"e4 c5 Nc3 Nc6 g3 g6 Bg2 Bg7 d3 d6"],["Французская защита",2,"e4 e6 d4 d5 Nc3 Nf6 Bg5 Be7 e5 Ne4"],["Французская: Advance",5,"e4 e6 d4 d5 e5 c5 c3 Nc6 Nf3 Qb6"],["Защита Каро — Канн",2,"e4 c6 d4 d5 Nc3 dxe4 Nxe4 Bf5 Ng3 Bg6 h4 h6 Nf3 Nd7"],["Скандинавская защита",2,"e4 d5 exd5 Qxd5 Nc3 Qa5 d4 c6 Nf3 Nf6"],["Защита Алёхина",2,"e4 Nf6 e5 Nd5 d4 d6 Nf3 Bg4"],["Защита Пирца — Уфимцева",2,"e4 d6 d4 Nf6 Nc3 g6 f4 Bg7 Nf3 O-O"],["Ферзевый гамбит",3,"d4 d5 c4 e6 Nc3 Nf6 Bg5 Be7 e3 O-O Nf3"],["Принятый ферзевый гамбит",4,"d4 d5 c4 dxc4 Nf3 Nf6 e3 e6 Bxc4 c5 O-O a6"],["Славянская защита",4,"d4 d5 c4 c6 Nf3 Nf6 Nc3 dxc4 a4 Bf5 e3 e6 Bxc4 Bb4"],["Гамбит Блэкмара — Димера",3,"d4 d5 e4 dxe4 Nc3 Nf6 f3 exf3 Nxf3"],["Лондонская система",3,"d4 d5 Bf4 Nf6 e3 e6 Nf3 Bd6 Bg3 O-O c3"],["Система Колле",7,"d4 d5 Nf3 Nf6 e3 e6 Bd3 c5 b3 Nc6 O-O Bd6"],["Староиндийская защита",6,"d4 Nf6 c4 g6 Nc3 Bg7 e4 d6 Nf3 O-O Be2 e5 O-O Nc6"],["Защита Грюнфельда",6,"d4 Nf6 c4 g6 Nc3 d5 cxd5 Nxd5 e4 Nxc3 bxc3 Bg7 Nf3 c5"],["Нимцо-индийская защита",6,"d4 Nf6 c4 e6 Nc3 Bb4 e3 O-O Bd3 d5 Nf3 c5 O-O Nc6"],["Ферзево-индийская защита",6,"d4 Nf6 c4 e6 Nf3 b6 g3 Bb7 Bg2 Be7 O-O O-O Nc3 Ne4"],["Каталонское начало",5,"d4 Nf6 c4 e6 g3 d5 Bg2 Be7 Nf3 O-O O-O dxc4"],["Защита Бенони",4,"d4 Nf6 c4 c5 d5 e6 Nc3 exd5 cxd5 d6 e4 g6"],["Гамбит Будапешт",4,"d4 Nf6 c4 e5 dxe5 Ng4 Bf4 Nc6 Nf3 Bb4+"],["Голландская защита",2,"d4 f5 g3 Nf6 Bg2 g6 Nf3 Bg7 O-O O-O c4 d6"],["Английское начало",1,"c4 e5 Nc3 Nf6 Nf3 Nc6 g3 d5 cxd5 Nxd5 Bg2 Nb6"],["Дебют Рети",2,"Nf3 d5 g3 Nf6 Bg2 e6 O-O Be7 d3 O-O"],["Дебют Бёрда",2,"f4 d5 Nf3 Nf6 e3 g6 b3 Bg7 Bb2 O-O"]].map(e=>[e[0],e[1],e[2].split(' ')]);
-function openingName(h){
- const n=s=>s.replace(/[+#]/g,'');let best=null;
- for(const e of ECO){const k=e[1];if(h.length>=k&&e[2].slice(0,k).every((x,i)=>n(x)===n(h[i]))&&(!best||k>best[1]))best=e}
- return best?best[0]:'';
-}
 function showOpening(hl){
- const el=$('opn');if(!el)return;
- 
- // Сначала пробуем гибкое распознавание с импровизацией
- const flexMatch=findOpeningByPosition(g);
- if(flexMatch){
-  el.textContent=flexMatch.improvisation?`Дебют: ${flexMatch.name} (импровизация)`:`Дебют: ${flexMatch.name}`;
-  return;
- }
- 
- // Fallback на точное совпадение
- const nm=$('oa')&&$('oa').checked?openingName(hl.map(m=>m.san)):'';
- el.textContent=nm?'Дебют: '+nm:'';
+ const el=$('opn'),pe=$('phase');if(!el)return;
+ if(!($('oa')&&$('oa').checked)){el.textContent='';if(pe)pe.textContent='';return}
+ const d=detectOpening(g);
+ const phaseRu={opening:'дебют',middlegame:'миттельшпиль',endgame:'эндшпиль'}[d.phase]||'';
+ if(pe)pe.textContent=d.phase?`Фаза: ${phaseRu} · ход ${d.fullmove}`:'';
+ if(!d.name){el.textContent=(d.phase==='opening'&&g.history().length>=2)?'Дебют: импровизация вне теории':'';return}
+ let t='Дебют: '+d.name;
+ if(d.deviated)t+=` · импровизация (${d.devColor==='w'?'белыми':'чёрными'})`;
+ el.textContent=t;
 }
 function bookMove(){
  const h=g.history(),n=s=>s.replace(/[+#]/g,''),sel=OPEN[$('op').value]||[];
  let pool=[];
- if(sel.length)pool=[sel];else if($('oa')&&$('oa').checked)pool=ECO.map(e=>e[2]);
+ if(sel.length)pool=[sel];else if($('oa')&&$('oa').checked)pool=ECO.map(e=>e[2].split(' '));
  const legal=g.moves().map(n),nx=[];
  for(const L of pool)if(h.length<L.length&&h.every((x,i)=>n(x)===n(L[i]))){const m=L[h.length];if(legal.includes(n(m))&&!nx.some(y=>n(y)===n(m)))nx.push(m)}
  return nx.length?nx[Math.floor(Math.random()*nx.length)]:null;
 }
 function applyTheme(){
- $('bd').classList.toggle('th1',$('theme').value==='th1');
- try{localStorage.setItem('theme',$('theme').value)}catch(e){}
+ const v=$('theme').value;
+ $('bd').classList.toggle('th1',v==='th1');
+ $('bd').classList.toggle('th2',v==='th2');
+ try{localStorage.setItem('theme',v)}catch(e){}
 }
 $('theme').onchange=applyTheme;
-try{const st=localStorage.getItem('theme');if(st!==null)$('theme').value=st}catch(e){}
+try{const st=localStorage.getItem('theme');if(st!==null)$('theme').value=st;applyTheme()}catch(e){}
 function bookOk(bk){
  try{
   const n=s=>s.replace(/[+#]/g,''),mm=g.moves({verbose:true}).find(x=>n(x.san)===n(bk));
@@ -1077,8 +973,14 @@ function bookOk(bk){
 }
 function quickStart(me){
  if(busy)return;
- $('pm').value=me;$('pgo').click();
+ const opp=me==='w'?'b':'w';
+ pmode=true;profNew();$('gm').value='off';$('eng').value=opp;
+ g.reset();last=hint=sel=null;targets=[];flipped=me==='b';
+ render();
  $('qw').classList.toggle('act',me==='w');$('qb').classList.toggle('act',me==='b');$('qa').classList.remove('act');
+ setMsg(me==='w'?'Считаю твой первый ход…':'Ты чёрными. Движок ходит белыми.');
+ if(me==='w'){if($('am').checked)engineMove();else showHint()}
+ else if($('am').checked)setTimeout(engineMove,100);
 }
 $('qw').onclick=()=>quickStart('w');
 $('qb').onclick=()=>quickStart('b');
@@ -1138,6 +1040,7 @@ function afterMove(){
  if(rate)showJudge(lm,rate.cls);else judgeSoon();
  nextRate=null;
  render();
+ if(rate)updateEvalBar(rate.score||0);
  if(status())return;
  if($('gm').value!=='off'){gambitStep();return}
  if(g.turn()===$('eng').value){if($('am').checked)engineMove();else showHint()}
@@ -1198,7 +1101,6 @@ $('loadop').onclick=()=>{
  if(!g.game_over()&&g.turn()===$('eng').value)engineMove();
  else if($('auto').checked&&$('eng').value==='none')showHint();
 };
-applyTheme();
 render();
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
