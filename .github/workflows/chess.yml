@@ -1,0 +1,72 @@
+# Этот файл нужно положить в репозиторий по пути .github/workflows/chess.yml
+name: chess
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Что запустить'
+        type: choice
+        options: [test, elo, book]
+        default: elo
+      games:
+        description: 'Партий на каждый уровень'
+        default: '20'
+      movetime:
+        description: 'Время на ход, мс'
+        default: '300'
+      levels:
+        description: 'Уровни Stockfish (Elo через запятую)'
+        default: '1600,1900,2200,2500'
+  schedule:
+    - cron: '0 6 1 * *'
+permissions:
+  contents: write
+jobs:
+  test:
+    if: github.event_name != 'workflow_dispatch' || inputs.task == 'test'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node ci.js perft
+      - run: node ci.js tactics
+      - run: node ci.js sync
+      - name: Сравнение с предыдущей версией (только информация)
+        continue-on-error: true
+        run: |
+          git show HEAD~1:engine.js > baseline.js || exit 0
+          node ci.js regress baseline.js 20 60
+  elo:
+    if: github.event_name == 'workflow_dispatch' && inputs.task == 'elo'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: sudo apt-get update && sudo apt-get install -y stockfish
+      - run: node ci.js elo --stockfish /usr/games/stockfish --levels "${{ inputs.levels }}" --games ${{ inputs.games }} --movetime ${{ inputs.movetime }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: games
+          path: games.txt
+  book:
+    if: (github.event_name == 'workflow_dispatch' && inputs.task == 'book') || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node fetch-openings.js
+      - run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add book.json
+          git diff --cached --quiet || (git commit -m "Обновление книги дебютов" && git push)
